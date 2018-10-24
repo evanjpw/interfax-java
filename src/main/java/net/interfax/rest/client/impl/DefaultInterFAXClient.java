@@ -323,15 +323,20 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
             URI outboundDocumentsUri = getOutboundDocumentsUri(fileToUpload, options);
 
             WebTarget target = client.target(outboundDocumentsUri);
+	    log.info("Creating document");
             response = target.request().header("Content-Length", 0).post(null);
+	    log.info("Response status was " + response.getStatus());
 
             apiResponse = new APIResponse();
             apiResponse.setStatusCode(response.getStatus());
             copyHeadersToAPIResponse(response, apiResponse);
 
-            if (response.hasEntity())
-                apiResponse.setResponseBody(response.readEntity(String.class));
-
+            if (response.hasEntity()) {
+		String rb = response.readEntity(String.class);
+		log.info("response.readEntity(String.class) " + rb);
+                apiResponse.setResponseBody(rb);
+	    }
+ 
             // upload chunks
             if (apiResponse.getStatusCode() == Response.Status.CREATED.getStatusCode()) {
 
@@ -339,6 +344,7 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
                                                     .create(apiResponse.getHeaders().get("Location").get(0).toString())
                                                     .getPath();
 
+		log.info("uploadChunkToDocumentEndpoint " + uploadChunkToDocumentEndpoint + " file " + fileToUpload);
                 InputStream inputStream = new FileInputStream(fileToUpload);
                 byte[] bytes = IOUtils.toByteArray(inputStream);
                 int chunkSize = 1024*1024;
@@ -352,6 +358,8 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
                         lastChunk = true;
                     }
                     chunkUploadResponses = uploadChunk(uploadChunkToDocumentEndpoint, chunks[i], bytesUploaded, bytesUploaded+chunks[i].length-1, lastChunk);
+		    log.info(("uploadChunk(" + uploadChunkToDocumentEndpoint + ", " + chunks[i] + ", " + bytesUploaded + ", " + (bytesUploaded+chunks[i].length-1) + ", " + lastChunk + ")"));
+                    log.info("chunkUploadResponses = " + chunkUploadResponses.getStatusCode());
                     bytesUploaded += chunks[i].length;
                 }
                 apiResponse.setStatusCode(chunkUploadResponses.getStatusCode());
