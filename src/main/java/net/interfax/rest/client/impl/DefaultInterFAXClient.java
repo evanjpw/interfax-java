@@ -33,6 +33,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
@@ -323,8 +324,10 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
             URI outboundDocumentsUri = getOutboundDocumentsUri(fileToUpload, options);
 
             WebTarget target = client.target(outboundDocumentsUri);
-	    log.info("Creating document");
-            response = target.request().header("Content-Length", 0).post(null);
+	    log.info("Creating document " + outboundDocumentsUri);
+	    javax.ws.rs.client.Invocation.Builder request = target.request().header("Content-Length", 0);
+	    log.info("ib " + request);
+            response = request.post(null);
 	    log.info("Response status was " + response.getStatus());
 
             apiResponse = new APIResponse();
