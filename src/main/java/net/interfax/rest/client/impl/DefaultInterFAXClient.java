@@ -164,7 +164,7 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
         URI uri = getSendFaxUri(faxNumber, options);
         return executePostRequest(
                 uri,
-                target -> target.request().header("Content-Location", urlOfDoc).header("Content-Length", 0).post(null)
+                target -> target.request().header("Content-Location", urlOfDoc).header("Content-Length", 0).post(Entity.entity(new byte[0], MediaType.APPLICATION_OCTET_STREAM_TYPE))
         );
     }
 
@@ -325,9 +325,10 @@ public class DefaultInterFAXClient extends AbstractInterFAXClient implements Int
 
             WebTarget target = client.target(outboundDocumentsUri);
 	    log.info("Creating document " + outboundDocumentsUri);
-	    javax.ws.rs.client.Invocation.Builder request = target.request().header("Content-Length", 0);
+	    javax.ws.rs.client.Invocation.Builder request = target.request()//.header("Content-Length", 0);
+;log.info("Not addinfg content length");
 	    log.info("ib " + request);
-            response = request.post(null);
+            response = request.post(Entity.entity(new byte[0], MediaType.APPLICATION_OCTET_STREAM_TYPE));
 	    log.info("Response status was " + response.getStatus());
 
             apiResponse = new APIResponse();
